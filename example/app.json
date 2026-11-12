@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "Replyze example",
+    "slug": "replyze-example",
+    "version": "1.0.0",
+    "ios": {
+      "infoPlist": {
+        "NSCameraUsageDescription": "Send a photo to support",
+        "NSPhotoLibraryUsageDescription": "Attach a picture to your message"
+      }
+    }
+  }
+}

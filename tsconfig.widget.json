@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2019", "DOM"],
+    "types": ["jest", "node"]
+  },
+  "include": ["src/protocol.ts", "src/session.ts", "__tests__/*.widget.test.ts"],
+  "exclude": ["node_modules", "lib"]
+}
