@@ -6,5 +6,5 @@
     // resolve its imports from this app's node_modules, not the SDK's own.
     "preserveSymlinks": true
   },
-  "include": ["App.tsx", "index.js"]
+  "include": ["App.tsx", "Quickstart.tsx", "index.js"]
 }

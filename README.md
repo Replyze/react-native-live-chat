@@ -45,7 +45,7 @@ The live demo is replyze.chat itself: the chat bubble in the bottom-right corner
    }
    ```
 
-Tap the button and the chat opens full screen. If your widget has an allowed-domains list, add `baseUrl` (see [Allowed domains](#allowed-domains)).
+Tap the button and the chat opens full screen. If your widget has an allowed-domains list, add `baseUrl` (see [Allowed domains](#allowed-domains)). The same app is [`example/Quickstart.tsx`](example/Quickstart.tsx).
 
 ## Contents
 

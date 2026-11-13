@@ -11,4 +11,4 @@ npx expo start
 
 Put your widget token (Replyze: Settings → Integrations → Install widget) in `App.tsx` first, and a `baseUrl` on one of the widget's allowed domains if it has a list. Expo Go is enough: the SDK has no native code of its own, only `react-native-webview`.
 
-`npm run typecheck` checks `App.tsx` against the built package. CI also installs the packed package here and bundles the app for Android and iOS with `npx expo export`.
+`Quickstart.tsx` is the README's Quickstart as a whole app (point `index.js` at it to run it). `npm run typecheck` checks both against the built package. CI also installs the packed package here and bundles the app for Android and iOS with `npx expo export`.
