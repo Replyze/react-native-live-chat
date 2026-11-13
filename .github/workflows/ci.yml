@@ -1,0 +1,130 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npm pack --dry-run
+
+  widget:
+    # The bridge against the real widget.js from cdn.replyze.chat, in jsdom (only the Replyze API is faked).
+    name: Real widget.js
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:widget
+
+  package:
+    name: Package
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx --yes publint@0.3.25 --strict
+      - run: npx --yes @arethetypeswrong/cli@0.18.5 --pack .
+      # The release workflow takes its notes from CHANGELOG.md: the current version needs a section.
+      - run: node scripts/changelog-notes.mjs "$(node -p "require('./package.json').version")"
+
+  peers:
+    # src/ against the oldest and the newest peer dependencies the package
+    # allows (the devDependencies above are React 18 and React Native 0.76).
+    name: Types, ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: oldest peers (React 17, React Native 0.68, WebView 11)
+            packages: typescript@5.6.3 react@17.0.2 @types/react@17.0.80 @types/react-native@0.68.15 react-native-webview@11.0.0
+          - name: newest peers (React 19.3, React Native 0.88, WebView 14, TypeScript 7)
+            packages: typescript@7.0.2 react@19.3.1 @types/react@19.3.0 react-native@0.88.1 react-native-webview@14.0.1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Type-check src/ in a folder with only these packages
+        env:
+          PACKAGES: ${{ matrix.packages }}
+        run: |
+          dir="$RUNNER_TEMP/peers"
+          mkdir -p "$dir"
+          cp -r src tsconfig.peers.json "$dir/"
+          cd "$dir"
+          echo '{ "private": true }' > package.json
+          # shellcheck disable=SC2086
+          npm install --no-audit --no-fund --legacy-peer-deps $PACKAGES
+          npx tsc -v
+          npx tsc -p tsconfig.peers.json
+
+  example:
+    # The Expo example installs the packed package like an app would, type-checks
+    # and bundles for Android and iOS with Metro (no device needed).
+    name: Expo example
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            example/package-lock.json
+      - run: npm ci
+      - name: Pack
+        run: npm pack --pack-destination "$RUNNER_TEMP"
+      - name: Install the example with the packed package
+        working-directory: example
+        run: |
+          npm ci --no-audit --no-fund
+          npm install --no-save --no-audit --no-fund "$RUNNER_TEMP"/replyze-react-native-*.tgz
+          test ! -L node_modules/@replyze/react-native
+          test -f node_modules/@replyze/react-native/lib/index.d.ts
+      - run: npm run typecheck
+        working-directory: example
+      - name: Bundle for Android and iOS
+        working-directory: example
+        run: npx expo export --platform android --platform ios --output-dir "$RUNNER_TEMP/export"
+        env:
+          CI: 1

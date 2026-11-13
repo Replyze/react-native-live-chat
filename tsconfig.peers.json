@@ -1,0 +1,20 @@
+// src/ on its own, for the CI job "peers": copied into an empty folder with
+// one set of react, react-native and react-native-webview, then type-checked.
+{
+  "compilerOptions": {
+    "target": "ES2019",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2019"],
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "types": []
+  },
+  "include": ["src"]
+}
