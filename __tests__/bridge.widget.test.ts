@@ -164,6 +164,60 @@ describe('the SDK with the real widget', () => {
     expect(logs.filter((l) => !l.startsWith('[Replyze]'))).toEqual([]);
   });
 
+  it('a sign-out while no chat was open: the next person who opens it sees nothing of the previous user', async () => {
+    const session = new ReplyzeSession({ log: () => undefined, readyTimeoutMs: 0 });
+    // The previous user signed out while no chat view was mounted.
+    session.identify({ email: 'ana@shop.example', userId: 42, userHash: 'f00d' });
+    session.reset();
+
+    // The next person opens the chat without signing in. The WebView still
+    // has Ana's chat in its storage, and the API would give it back to her key.
+    const { w, calls, start } = boot(session, {});
+    w.localStorage.setItem('aichat_session', JSON.stringify({ session_id: '77', contact_id: '5', token: 'wgt_e2e', created_at: Date.now() }));
+    w.localStorage.setItem('aichat_contact_id', '5');
+    w.localStorage.setItem('aichat_visitor_key', 'vk_5');
+    w.localStorage.setItem('aichat_channel_key', 'ck_5');
+    const keys: Array<string | null> = [];
+    w.fetch = async (input: string, init: { method?: string; body?: string; headers?: Record<string, string> } = {}) => {
+      const method = init.method || 'GET';
+      const url = String(input);
+      const body = init.body ? JSON.parse(init.body) : null;
+      calls.push({ method, url, body });
+      keys.push(init.headers?.['X-Visitor-Key'] ?? null);
+      let answer = api(url, method);
+      if (url.endsWith('/session/start')) {
+        answer = body?.contact_id === '5' && init.headers?.['X-Visitor-Key'] === 'vk_5'
+          ? { ...CONFIG, session_id: 77, contact_id: '5', visitor_key: 'vk_5', channel_key: 'ck_5', messages: [{ id: '901', content: 'ANA-SECRET my order 1042', sender: 'visitor', created_at: '2026-11-08T10:00:00Z' }] }
+          : { ...CONFIG, session_id: 0, contact_id: '6', visitor_key: 'vk_6', channel_key: 'ck_6', messages: [] };
+      }
+      return { ok: true, status: 200, text: async () => JSON.stringify(answer), json: async () => answer };
+    };
+
+    // When the session's scripts carry the reset: whatever the page sends after it is the new person's.
+    let afterReset = -1;
+    const evaluate = w.eval.bind(w);
+    w.eval = (script: string) => {
+      if (script.includes('"cmd":"reset"') && afterReset === -1) afterReset = calls.length;
+      return evaluate(script);
+    };
+    start();
+    await tick(100);
+    session.sendMessage('Hello, I am new here');
+    await tick(100);
+
+    const host = w.document.getElementById('aichat-widget') as HTMLElement;
+    const shown = host.shadowRoot!.textContent + JSON.stringify(w.Replyze._widget.messages);
+    expect(shown).not.toContain('ANA-SECRET');
+    expect(w.localStorage.getItem('aichat_visitor_key')).not.toBe('vk_5');
+    // The session's pending reset ran as the page became ready. Ana's contact
+    // and key went out only before it (the restore it cancelled), never after.
+    expect(afterReset).toBeGreaterThan(0);
+    const message = calls.find((c) => c.url.endsWith('/message'));
+    expect(message?.body).toEqual(expect.objectContaining({ content: 'Hello, I am new here' }));
+    expect(calls.slice(afterReset).some((c) => c.body?.contact_id === '5')).toBe(false);
+    expect(keys.slice(afterReset)).not.toContain('vk_5');
+  });
+
   it('tells the app when an article cannot be shown', async () => {
     const session = new ReplyzeSession({ log: () => undefined, readyTimeoutMs: 0 });
     const errors: unknown[] = [];

@@ -109,6 +109,68 @@ describe('ReplyzeSession', () => {
     ]);
   });
 
+  it('a sign-out with no chat view open reaches the next one first, so the next person starts fresh', () => {
+    // The user signs out while no chat screen is mounted.
+    session.identify({ email: 'old@shop.example' });
+    session.reset();
+    expect(session.isResetPending()).toBe(true);
+
+    // Later someone opens the chat without signing in.
+    const web = fakeWebView();
+    const connection = session.connect(web.inject);
+    connection.setVisible(true);
+    connection.receive(event('ready'));
+    expect(web.commands).toEqual([{ cmd: 'reset' }, { cmd: 'open' }]);
+    expect(session.isResetPending()).toBe(false);
+
+    // Carried out once: the next chat view (or a reload) doesn't reset the new visitor again.
+    connection.reloaded();
+    connection.receive(event('ready'));
+    const other = fakeWebView();
+    session.connect(other.inject).receive(event('ready'));
+    expect(web.cmds().filter((c) => c === 'reset')).toHaveLength(1);
+    expect(other.cmds()).not.toContain('reset');
+  });
+
+  it('a sign-out survives a chat page that reloads or is replaced before it is ready', () => {
+    const first = fakeWebView();
+    const loading = session.connect(first.inject);
+    session.reset();
+    // The page reloads (or the view is rebuilt, as a "Try again" does) before it said ready.
+    loading.reloaded();
+    loading.disconnect();
+    const second = fakeWebView();
+    session.connect(second.inject).receive(event('ready'));
+    expect(second.cmds()[0]).toBe('reset');
+    expect(first.commands).toEqual([]);
+  });
+
+  it('keeps a sign-out pending when the WebView throws while it is sent', () => {
+    let broken = true;
+    const commands: string[] = [];
+    const flaky = session.connect((script) => {
+      if (broken) throw new Error('crashed');
+      commands.push(script);
+    });
+    flaky.receive(event('ready'));
+    session.reset();
+    expect(session.isResetPending()).toBe(true);
+    broken = false;
+    flaky.reloaded();
+    flaky.receive(event('ready'));
+    expect(commands[0]).toContain('"cmd":"reset"');
+    expect(session.isResetPending()).toBe(false);
+  });
+
+  it('a sign-out a ready chat carried out is not repeated for later views', () => {
+    const web = fakeWebView();
+    const connection = session.connect(web.inject);
+    connection.receive(event('ready'));
+    session.reset();
+    expect(web.cmds()).toContain('reset');
+    expect(session.isResetPending()).toBe(false);
+  });
+
   it('keeps the unread count and tells listeners only about changes', () => {
     const counts: number[] = [];
     const off = session.onUnreadCountChange((n) => counts.push(n));

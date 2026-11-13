@@ -1,6 +1,6 @@
 {
   "name": "@replyze/react-native",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Live chat and AI support in your React Native or Expo app: the Replyze chat with signed-in users, unread counts, help articles and events.",
   "license": "MIT",
   "type": "commonjs",

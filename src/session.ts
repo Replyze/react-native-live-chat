@@ -125,7 +125,7 @@ class WebViewConnection implements Connection {
   send(command: HostCommand): void {
     if (this.gone) return;
     if (this.ready) {
-      this.run(command);
+      if (this.run(command) && command.cmd === 'reset') this.session.resetDone();
     } else if (command.cmd === 'reset') {
       // Goes first when the widget is ready, before the new user's state.
       this.pendingReset = true;
@@ -144,9 +144,10 @@ class WebViewConnection implements Connection {
   private becomeReady(): void {
     this.clearTimer();
     this.ready = true;
-    // The page started over: a sign-out asked for meanwhile, the app's
-    // insets, who the user is, whether the chat is on screen, then the rest.
-    if (this.pendingReset) this.run({ cmd: 'reset' });
+    // The page started over: a sign-out asked for meanwhile (or one no
+    // chat page has carried out yet), the app's insets, who the user is,
+    // whether the chat is on screen, then the rest.
+    if ((this.pendingReset || this.session.isResetPending()) && this.run({ cmd: 'reset' })) this.session.resetDone();
     this.pendingReset = false;
     if (this.insets) this.run(this.insets);
     for (const command of this.session.stickyCommands()) this.run(command);
@@ -158,11 +159,13 @@ class WebViewConnection implements Connection {
     this.session.emitReady();
   }
 
-  private run(command: HostCommand): void {
+  /** False when the WebView threw: it is going away, and the next ready replays what matters. */
+  private run(command: HostCommand): boolean {
     try {
       this.inject(commandScript(command));
+      return true;
     } catch {
-      // The WebView is going away; the next ready replays what matters.
+      return false;
     }
   }
 
@@ -186,6 +189,13 @@ class WebViewConnection implements Connection {
 
 export class ReplyzeSession {
   private connections = new Set<WebViewConnection>();
+  /**
+   * reset() was called and no chat page has carried it out yet: no chat view
+   * was open, or its page was loading, reloading or crashed. The next page
+   * that becomes ready resets first, so the next person never sees the
+   * previous user's chat, which the WebView keeps in its storage.
+   */
+  private resetPending = false;
   private identity: HostCommand | null = null;
   private language: HostCommand | null = null;
   private data: ReplyzeData = {};
@@ -264,8 +274,13 @@ export class ReplyzeSession {
     this.broadcast({ cmd: 'sendMessage', args: { text } });
   }
 
-  /** The user signed out: forget them in the chat too (a new visitor from now on). */
+  /**
+   * The user signed out: forget them in the chat too (a new visitor from now
+   * on). With no chat view open (or none loaded yet), the next one to load
+   * does it before anything else.
+   */
   reset(): void {
+    this.resetPending = true;
     this.identity = null;
     this.data = {};
     for (const connection of this.connections) connection.dropQueue();
@@ -302,7 +317,17 @@ export class ReplyzeSession {
     return this.subscribe('identified', listener);
   }
 
+  /** Whether a reset() still waits for a chat page to carry it out. */
+  isResetPending(): boolean {
+    return this.resetPending;
+  }
+
   // ---- for the connections ----
+
+  /** A chat page ran the reset: the stored chat is gone (the app's WebViews share their storage). */
+  resetDone(): void {
+    this.resetPending = false;
+  }
 
   /** What a freshly loaded WebView needs to be the same user. */
   stickyCommands(): HostCommand[] {

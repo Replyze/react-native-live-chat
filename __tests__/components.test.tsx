@@ -59,7 +59,9 @@ beforeEach(() => {
 afterEach(() => {
   act(() => renderer?.unmount());
   renderer = null;
+  // The next test is a fresh app: no user, and no sign-out left for its chat to carry out.
   Replyze.reset();
+  Replyze.session.resetDone();
   jest.restoreAllMocks();
   jest.useRealTimers();
 });
@@ -148,6 +150,23 @@ describe('<ReplyzeChat />', () => {
       { cmd: 'open' },
       { cmd: 'pushEvent', args: { name: 'Opened chat' } },
     ]);
+  });
+
+  it('a sign-out while no chat was mounted reaches the next chat first, also after a retry', () => {
+    jest.useFakeTimers();
+    Replyze.identify({ email: 'ana@shop.example', userId: 7, userHash: 'abc' });
+    Replyze.reset();
+    const r = render(<ReplyzeChat widgetToken="wgt_comp1" />);
+    // The page doesn't load; the visitor taps "Try again" (a new WebView).
+    act(() => {
+      jest.advanceTimersByTime(20000);
+    });
+    act(() => {
+      r.root.findByProps({ accessibilityRole: 'button' }).props.onPress();
+    });
+    expect(mockWeb.mounts).toBe(2);
+    send('ready');
+    expect(cmdNames()).toEqual(['reset', 'open']);
   });
 
   it('shows a retry when the chat does not load, and loads a new WebView on retry', () => {
