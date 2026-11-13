@@ -4,7 +4,8 @@
  * Run it with Expo (see example/README.md).
  */
 import { useEffect, useState } from 'react';
-import { Pressable, SafeAreaView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Replyze, ReplyzeChat, ReplyzeHost } from '@replyze/react-native';
 
 // Your widget's token (Settings → Integrations → Install widget) and,
@@ -24,16 +25,20 @@ function SupportButton() {
   );
 }
 
-export default function App() {
+function Home() {
+  // Android apps draw edge to edge: the chat needs the safe-area insets.
+  const insets = useSafeAreaInsets();
   const [signedIn, setSignedIn] = useState(false);
   const [inlineChat, setInlineChat] = useState(false);
 
   useEffect(() => Replyze.onMessage((message) => console.log('Reply from', message.senderName ?? message.sender, message.text)), []);
 
   const signIn = async () => {
-    // userHash comes from YOUR server: HMAC-SHA256(userId, identity secret).
-    // Never put the identity secret in the app.
-    const userHash = await fetch('https://yourshop.example/api/replyze-hash').then((r) => r.text()).catch(() => undefined);
+    // userHash comes from YOUR server: HMAC-SHA256 of the user id, keyed
+    // with the identity secret. Never put the identity secret in the app.
+    const userHash = await fetch('https://yourshop.example/api/replyze-hash')
+      .then((r) => r.text())
+      .catch(() => undefined);
     Replyze.identify({ userId: 'user_1234', email: 'ana@example.com', name: 'Ana', userHash });
     Replyze.setData({ plan: 'pro', app_version: '3.2.0' });
     Replyze.pushEvent('Signed in');
@@ -47,11 +52,7 @@ export default function App() {
 
   if (inlineChat) {
     // The chat as one of your screens (e.g. a tab or a stack screen)
-    return (
-      <View style={styles.fill}>
-        <ReplyzeChat showCloseButton onClose={() => setInlineChat(false)} />
-      </View>
-    );
+    return <ReplyzeChat insets={insets} onClose={() => setInlineChat(false)} />;
   }
 
   return (
@@ -71,8 +72,16 @@ export default function App() {
         </Pressable>
       </SafeAreaView>
       {/* Once, last in the root view: the chat Replyze.show() opens */}
-      <ReplyzeHost onError={(e) => console.warn(e.code, e.message)} />
+      <ReplyzeHost insets={insets} onError={(e) => console.warn(e.code, e.message)} />
     </View>
+  );
+}
+
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <Home />
+    </SafeAreaProvider>
   );
 }
 

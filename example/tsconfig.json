@@ -1,0 +1,10 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    // node_modules/@replyze/react-native links to the folder above (file:..):
+    // resolve its imports from this app's node_modules, not the SDK's own.
+    "preserveSymlinks": true
+  },
+  "include": ["App.tsx", "index.js"]
+}
