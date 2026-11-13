@@ -63,6 +63,24 @@ jobs:
       # The release workflow takes its notes from CHANGELOG.md: the current version needs a section.
       - run: node scripts/changelog-notes.mjs "$(node -p "require('./package.json').version")"
 
+  components-latest:
+    # The component tests with the newest React and React Native (the
+    # devDependencies are React 18 and React Native 0.76).
+    name: Components, React 19.3 and React Native 0.88
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm install --no-save --legacy-peer-deps --no-audit --no-fund react@19.3.1 react-test-renderer@19.3.1 react-native@0.88.1 @react-native/babel-preset@0.88.1 @react-native/jest-preset@0.88.1 react-native-webview@14.0.1
+      - run: node -p "'react ' + require('react/package.json').version + ', react-native ' + require('react-native/package.json').version"
+      # React Native 0.88 moved its Jest preset to @react-native/jest-preset.
+      - run: npx jest --config '{"preset":"@react-native/jest-preset","roots":["<rootDir>/__tests__"],"testMatch":["**/*.test.tsx"]}'
+
   peers:
     # src/ against the oldest and the newest peer dependencies the package
     # allows (the devDependencies above are React 18 and React Native 0.76).
