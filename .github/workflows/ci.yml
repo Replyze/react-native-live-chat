@@ -146,3 +146,30 @@ jobs:
         run: npx expo export --platform android --platform ios --output-dir "$RUNNER_TEMP/export"
         env:
           CI: 1
+
+  github-install:
+    # What the README tells developers to do, against this commit: npm installs
+    # the package from GitHub, its prepare script builds lib/, and the README
+    # Quickstart type-checks in a new project with the newest peers.
+    name: Install from GitHub
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      REPO: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+      SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: A new project with github:${{ env.REPO }}
+        run: |
+          dir="$RUNNER_TEMP/app"
+          mkdir -p "$dir"
+          cp example/Quickstart.tsx "$dir/App.tsx"
+          cd "$dir"
+          echo '{ "name": "app", "private": true }' > package.json
+          npm install --no-audit --no-fund "github:$REPO#$SHA" react@19.3.0 react-native@0.88.1 react-native-webview@14.0.1 @types/react@19.3.0 typescript@6.0.3
+          test -f node_modules/@replyze/react-native/lib/index.d.ts
+          echo '{ "compilerOptions": { "strict": true, "jsx": "react-jsx", "module": "preserve", "moduleResolution": "bundler", "customConditions": ["react-native"], "target": "ESNext", "lib": ["ESNext", "DOM"], "noEmit": true, "skipLibCheck": true }, "include": ["App.tsx"] }' > tsconfig.json
+          npx tsc -p .
