@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://replyze.chat/?utm_source=github&utm_medium=react-native-live-chat">
+  <a href="https://replyze.chat/?utm_source=github&utm_medium=referral&utm_campaign=react-native-live-chat">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Replyze/.github/main/assets/logo-on-dark.png">
       <img src="https://raw.githubusercontent.com/Replyze/.github/main/assets/logo-on-light.png" alt="Replyze" height="48">
@@ -9,15 +9,15 @@
 
 # Live chat and AI support for React Native and Expo apps
 
-`@replyze/react-native` puts the [Replyze](https://replyze.chat/?utm_source=github&utm_medium=react-native-live-chat) live chat and AI assistant inside your React Native or Expo app. It is the same chat as the Replyze widget on your website, running in a WebView: AI answers, your team's replies, help articles, the visitor's language, file attachments and identity verification all work, and new widget features reach your app without an app update. The package has no native code of its own, so it works in Expo Go, Expo dev builds and bare React Native.
+`@replyze/react-native` puts the [Replyze](https://replyze.chat/?utm_source=github&utm_medium=referral&utm_campaign=react-native-live-chat) live chat and AI assistant inside your React Native or Expo app. It is the same chat as the Replyze widget on your website, running in a WebView: AI answers, your team's replies, help articles, the visitor's language, file attachments and identity verification all work, and new widget features reach your app without an app update. The package has no native code of its own, so it works in Expo Go, Expo dev builds and bare React Native.
 
-**[Create a free account](https://client.replyze.chat/register?utm_source=github&utm_medium=react-native-live-chat&utm_content=cta-top)** · [Live demo](https://replyze.chat/?utm_source=github&utm_medium=react-native-live-chat&utm_content=live-demo) · [Docs](https://github.com/Replyze/replyze)
+**[Create a free account](https://client.replyze.chat/register?utm_source=github&utm_medium=referral&utm_campaign=react-native-live-chat&utm_content=cta-top)** · [Live demo](https://replyze.chat/?utm_source=github&utm_medium=referral&utm_campaign=react-native-live-chat&utm_content=live-demo) · [Docs](https://github.com/Replyze/replyze)
 
 The live demo is replyze.chat itself: the chat bubble in the bottom-right corner is the widget this package runs in your app.
 
 ## Quickstart
 
-1. **Get your widget token.** [Create a free account](https://client.replyze.chat/register?utm_source=github&utm_medium=react-native-live-chat&utm_content=quickstart), then copy the token (`wgt_...`) from **Settings → Integrations → Install widget**.
+1. **Get your widget token.** [Create a free account](https://client.replyze.chat/register?utm_source=github&utm_medium=referral&utm_campaign=react-native-live-chat&utm_content=quickstart), then copy the token (`wgt_...`) from **Settings → Integrations → Install widget**.
 2. **Install the package** from GitHub, with `react-native-webview`:
    ```sh
    # Expo
@@ -68,7 +68,7 @@ npx expo install @replyze/react-native react-native-webview   # Expo
 npm install @replyze/react-native react-native-webview        # bare React Native
 ```
 
-Requirements: React 17 or newer, React Native 0.68 or newer and `react-native-webview` 11 or newer (peer dependencies; the current Expo SDK pins a matching `react-native-webview` with `npx expo install`). You also need a Replyze account ([sign up](https://client.replyze.chat/register?utm_source=github&utm_medium=react-native-live-chat&utm_content=install)).
+Requirements: React 17 or newer, React Native 0.68 or newer and `react-native-webview` 11 or newer (peer dependencies; the current Expo SDK pins a matching `react-native-webview` with `npx expo install`). You also need a Replyze account ([sign up](https://client.replyze.chat/register?utm_source=github&utm_medium=referral&utm_campaign=react-native-live-chat&utm_content=install)).
 
 ## Open the chat
 
@@ -232,8 +232,8 @@ CI runs these on Node 20, 22 and 24, runs the component tests again with React 1
 
 ## Links
 
-- [Replyze](https://replyze.chat/?utm_source=github&utm_medium=react-native-live-chat&utm_content=footer): AI customer support and live chat
-- [Pricing](https://replyze.chat/pricing?utm_source=github&utm_medium=react-native-live-chat&utm_content=footer)
+- [Replyze](https://replyze.chat/?utm_source=github&utm_medium=referral&utm_campaign=react-native-live-chat&utm_content=footer): AI customer support and live chat
+- [Pricing](https://replyze.chat/pricing?utm_source=github&utm_medium=referral&utm_campaign=react-native-live-chat&utm_content=footer)
 - [Flutter version](https://github.com/Replyze/flutter-live-chat)
 - [Changelog](CHANGELOG.md)
 
