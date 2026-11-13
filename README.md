@@ -228,7 +228,7 @@ npm run build       # lib/
 
 `npm run test:widget` runs the widget bundle in jsdom with only the Replyze API faked. Set `REPLYZE_WIDGET_JS` to a local `widget.js` to test another build, or `REPLYZE_WIDGET_URL` to download one from elsewhere.
 
-CI also type-checks `src/` against the oldest and the newest supported React, React Native and `react-native-webview` (`tsconfig.peers.json`), and installs the packed package into the Expo example to type-check and bundle it for Android and iOS. Releases: [RELEASING.md](RELEASING.md).
+CI runs these on Node 20, 22 and 24, runs the component tests again with React 19.3 and React Native 0.88, type-checks `src/` against the oldest and the newest supported React, React Native and `react-native-webview` (`tsconfig.peers.json`), and installs the packed package into the Expo example to type-check it and bundle it for Android and iOS. Releases: [RELEASING.md](RELEASING.md).
 
 ## Links
 
