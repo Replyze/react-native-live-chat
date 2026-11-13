@@ -106,7 +106,9 @@ export const ReplyzeChat = forwardRef<ReplyzeChatHandle, ReplyzeChatProps>(funct
   const options = resolved.options;
   const html = useMemo(() => (options ? buildChatHtml(options) : ''), [options]);
 
-  const webRef = useRef<WebView>(null);
+  // WebView<{}>, not WebView: react-native-webview 14 defaults the type
+  // parameter to undefined, which leaves the component no props at all.
+  const webRef = useRef<WebView<{}>>(null);
   const [generation, setGeneration] = useState(0);
   const [failure, setFailure] = useState<ReplyzeError | null>(null);
 
@@ -260,7 +262,8 @@ function DefaultError({ retry }: { retry: () => void }) {
 const styles = StyleSheet.create({
   fill: { flex: 1 },
   web: { flex: 1, backgroundColor: 'transparent' },
-  cover: { ...StyleSheet.absoluteFillObject, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' },
+  // Spelled out: React Native 0.88 no longer has StyleSheet.absoluteFillObject.
+  cover: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' },
   error: { alignItems: 'center', padding: 24 },
   errorText: { fontSize: 16, color: '#1f2937', marginBottom: 16, textAlign: 'center' },
   retry: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8, backgroundColor: '#eef0f3', minWidth: 120, alignItems: 'center' },

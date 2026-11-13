@@ -55,7 +55,10 @@ export interface ReplyzeUser {
   name?: string;
   /** Your own id for this user; with userHash, the same contact on every device. */
   userId?: string | number;
-  /** HMAC-SHA256(userId, or email without one, the widget's identity secret), hex. Compute it on your server. */
+  /**
+   * HMAC-SHA256 of userId (or, without one, of the email in lower case),
+   * keyed with the widget's identity secret, hex. Compute it on your server.
+   */
   userHash?: string;
 }
 
