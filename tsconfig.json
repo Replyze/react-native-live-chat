@@ -13,10 +13,8 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
-    "types": ["jest", "react-native"],
-    "baseUrl": ".",
-    "paths": { "@replyze/react-native": ["src"] }
+    "types": ["jest", "react-native"]
   },
-  "include": ["src", "__tests__", "example/App.tsx"],
-  "exclude": ["node_modules", "lib", "__tests__/*.widget.test.ts"]
+  "include": ["src", "__tests__"],
+  "exclude": ["node_modules", "lib", "example", "__tests__/*.widget.test.ts"]
 }

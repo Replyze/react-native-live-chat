@@ -1,16 +1,20 @@
 {
   "name": "@replyze/react-native",
   "version": "0.1.0",
-  "description": "Replyze live chat and AI support inside your React Native or Expo app",
+  "description": "Live chat and AI support in your React Native or Expo app: the Replyze chat with signed-in users, unread counts, help articles and events.",
+  "license": "MIT",
+  "type": "commonjs",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "react-native": "src/index.ts",
   "source": "src/index.ts",
+  "sideEffects": false,
   "files": [
     "src",
     "lib",
     "!src/**/__tests__",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "scripts": {
@@ -18,8 +22,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "jest",
     "test:widget": "jest --config jest.widget.config.js",
-    "prepublishOnly": "npm run typecheck && npm test && npm run build",
-    "prepare": "tsc -p tsconfig.build.json"
+    "prepare": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
   },
   "keywords": [
     "replyze",
@@ -40,7 +44,9 @@
   "bugs": {
     "url": "https://github.com/Replyze/react-native-live-chat/issues"
   },
-  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "peerDependencies": {
     "react": ">=17.0.0",
     "react-native": ">=0.68.0",

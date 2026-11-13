@@ -5,7 +5,7 @@
  */
 module.exports = {
   testEnvironment: 'node',
-  transform: { '^.+\.ts$': ['ts-jest', { tsconfig: 'tsconfig.widget.json' }] },
+  transform: { '^.+\\.ts$':['ts-jest', { tsconfig: 'tsconfig.widget.json' }] },
   roots: ['<rootDir>/__tests__'],
   testMatch: ['**/*.widget.test.ts'],
   globalSetup: '<rootDir>/__tests__/support/fetchWidget.js',
